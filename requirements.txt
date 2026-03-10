@@ -1,0 +1,24 @@
+# ============================================
+# Traffic Density Detection System
+# Dependencies
+# ============================================
+
+# Core AI / Computer Vision
+ultralytics>=8.1.0          # YOLOv8
+opencv-python>=4.8.0        # Video/Image processing
+numpy>=1.24.0               # Numerical ops
+Pillow>=10.0.0              # Image handling
+
+# Training & Visualization
+matplotlib>=3.7.0           # Plots & training curves
+seaborn>=0.12.0             # Heatmaps
+
+# Dashboard Backend
+fastapi>=0.100.0            # API server
+uvicorn>=0.23.0             # ASGI server
+websockets>=11.0            # Real-time communication
+jinja2>=3.1.0               # HTML templating
+python-multipart>=0.0.6     # File uploads
+
+# Dataset Tools
+roboflow                    # Roboflow dataset download

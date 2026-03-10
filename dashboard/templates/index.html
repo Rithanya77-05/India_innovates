@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Management System — Live Dashboard</title>
+    <meta name="description"
+        content="AI-powered real-time traffic density monitoring, adaptive signal control, and emergency green corridor dashboard">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚦</text></svg>">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* ===== Waiting Overlay ===== */
+        .waiting-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 5, 20, 0.92);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            transition: opacity 0.5s ease;
+        }
+
+        .waiting-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .waiting-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        .waiting-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .waiting-sub {
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .detection-controls {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            width: 420px;
+            max-width: 90vw;
+        }
+
+        .ctrl-label {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .ctrl-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 0.6rem 0.9rem;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+            outline: none;
+            box-sizing: border-box;
+            margin-bottom: 1rem;
+        }
+
+        .ctrl-input:focus {
+            border-color: #00e68a;
+        }
+
+        .btn-start {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, #00e68a, #00d4ff);
+            border: none;
+            border-radius: 10px;
+            color: #0a0a1a;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .btn-start:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== Detection Controls Bar ===== */
+        .live-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 1rem;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-stop {
+            padding: 0.4rem 1.1rem;
+            background: rgba(255, 50, 50, 0.2);
+            border: 1px solid rgba(255, 50, 50, 0.3);
+            border-radius: 8px;
+            color: #ff3232;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+
+        .btn-stop:hover {
+            background: rgba(255, 50, 50, 0.35);
+        }
+
+        .source-label {
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            margin-left: auto;
+        }
+
+        /* ===== Emergency Panel ===== */
+        .emergency-panel {
+            background: rgba(255, 23, 68, 0.06);
+            border: 1px solid rgba(255, 23, 68, 0.15);
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .emergency-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .emergency-panel-header h2 {
+            flex: 1;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .emg-status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .emg-status-badge.active {
+            background: rgba(255, 23, 68, 0.25);
+            color: #ff1744;
+            animation: pulse 1s infinite;
+        }
+
+        /* Lane corridor status */
+        .corridor-lanes {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .corridor-lane {
+            flex: 1;
+            text-align: center;
+            padding: 0.6rem 0.3rem;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            transition: all 0.4s ease;
+        }
+
+        .corridor-lane .cl-name {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .corridor-lane .cl-status {
+            font-size: 1.1rem;
+            margin-top: 0.2rem;
+        }
+
+        .corridor-lane.lane-green {
+            border-color: #00e68a;
+            background: rgba(0, 230, 138, 0.12);
+        }
+
+        .corridor-lane.lane-green .cl-status {
+            color: #00e68a;
+        }
+
+        .corridor-lane.lane-red {
+            border-color: rgba(255, 50, 50, 0.3);
+            background: rgba(255, 50, 50, 0.06);
+        }
+
+        .corridor-lane.lane-red .cl-status {
+            color: #ff3232;
+        }
+
+        /* GPS trigger controls */
+        .emg-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .emg-select {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-gps {
+            padding: 0.5rem 1.1rem;
+            background: rgba(255, 23, 68, 0.2);
+            border: 1px solid rgba(255, 23, 68, 0.35);
+            border-radius: 8px;
+            color: #ff5252;
+            font-weight: 600;
+            font-size: 0.83rem;
+            cursor: pointer;
+        }
+
+        .btn-gps:hover {
+            background: rgba(255, 23, 68, 0.35);
+        }
+
+        .btn-deactivate {
+            padding: 0.5rem 1.1rem;
+            background: rgba(0, 230, 138, 0.12);
+            border: 1px solid rgba(0, 230, 138, 0.25);
+            border-radius: 8px;
+            color: #00e68a;
+            font-weight: 600;
+            font-size: 0.83rem;
+            cursor: pointer;
+        }
+
+        .btn-deactivate:hover {
+            background: rgba(0, 230, 138, 0.25);
+        }
+
+        .btn-deactivate:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* 4-lane signal grid */
+        .signals-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+
+        /* lane density 4 */
+        .density-bars-4 {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .5
+            }
+        }
+
+        @keyframes ambulance-flash {
+
+            0%,
+            100% {
+                background: rgba(255, 23, 68, 0.08);
+            }
+
+            50% {
+                background: rgba(255, 23, 68, 0.2);
+            }
+        }
+
+        .emergency-mode-active {
+            animation: ambulance-flash 0.8s infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== Waiting / Start Detection Overlay ===== -->
+    <div id="waitingOverlay" class="waiting-overlay">
+        <div class="waiting-icon">🚦</div>
+        <div class="waiting-title">Traffic Management System</div>
+        <div class="waiting-sub">Connect a video source to begin real-time analysis</div>
+        <div class="detection-controls">
+            <label class="ctrl-label">Video Source</label>
+            <input id="sourceInput" class="ctrl-input" type="text" value="0"
+                placeholder="0 = webcam | path/to/video.mp4">
+            <label class="ctrl-label">Model Path</label>
+            <input id="modelInput" class="ctrl-input" type="text" value="yolov8s.pt"
+                placeholder="yolov8s.pt or models/best.pt">
+            <button id="btnStart" class="btn-start" onclick="startDetection()">
+                🚀 Start Detection
+            </button>
+            <div id="startError" style="color:#ff5252;font-size:.82rem;margin-top:.6rem;display:none;"></div>
+        </div>
+    </div>
+
+    <!-- ===== Emergency Banner ===== -->
+    <div id="emergencyBanner" class="emergency-banner hidden">
+        <div class="emergency-content">
+            <span class="emergency-icon">🚑</span>
+            <span class="emergency-text">EMERGENCY VEHICLE DETECTED — GREEN CORRIDOR ACTIVE</span>
+            <span class="emergency-lane" id="emergencyLane"></span>
+            <span class="emergency-icon">🚨</span>
+        </div>
+    </div>
+
+    <!-- ===== Header ===== -->
+    <header class="header" id="mainHeader">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">🚦</span>
+                <div>
+                    <h1>Traffic Management System</h1>
+                    <p class="subtitle">AI Traffic Flow Optimizer · Adaptive Signals · Emergency Green Corridor</p>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="status-badge" id="statusBadge">
+                <span class="status-dot"></span>
+                <span id="statusText">Connecting...</span>
+            </div>
+            <div class="mode-badge" id="modeBadge">NORMAL</div>
+        </div>
+    </header>
+
+    <!-- Live Controls Bar (shown after detection starts) -->
+    <div class="live-controls" id="liveControls" style="display:none;">
+        <span style="font-size:.82rem;color:rgba(255,255,255,.6);">🔴 Live Detection Running</span>
+        <button class="btn-stop" onclick="stopDetection()">⏹ Stop Detection</button>
+        <span class="source-label" id="liveSourceLabel"></span>
+    </div>
+
+    <!-- ===== Main Dashboard Grid ===== -->
+    <main class="dashboard-grid">
+
+        <!-- Top Stats Row -->
+        <section class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#667eea,#764ba2);">🚗</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="totalVehicles">—</span>
+                    <span class="stat-label">Total Vehicles</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#f093fb,#f5576c);">📊</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="densityScore">—</span>
+                    <span class="stat-label">Density Score</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe);">📈</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="congestionLevel">—</span>
+                    <span class="stat-label">Congestion Level</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#43e97b,#38f9d7);">⏱️</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="frameCount">0</span>
+                    <span class="stat-label">Frames Processed</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Middle Row: Traffic Signals + Lane Density -->
+        <section class="middle-row">
+
+            <!-- Traffic Signal Display — 4 Lanes -->
+            <div class="card signal-card">
+                <div class="card-header">
+                    <h2>🚦 Traffic Signals</h2>
+                    <span class="card-badge" id="signalMode">Adaptive</span>
+                </div>
+                <div class="signals-grid-4" id="signalsGrid">
+                    <!-- Lane 1 -->
+                    <div class="signal-unit" id="signal-lane_1">
+                        <div class="signal-lights">
+                            <div class="light red"></div>
+                            <div class="light yellow"></div>
+                            <div class="light green active"></div>
+                        </div>
+                        <div class="signal-info">
+                            <span class="signal-name">Lane 1</span>
+                            <span class="signal-timer" id="timer-lane_1">—</span>
+                        </div>
+                    </div>
+                    <!-- Lane 2 -->
+                    <div class="signal-unit" id="signal-lane_2">
+                        <div class="signal-lights">
+                            <div class="light red active"></div>
+                            <div class="light yellow"></div>
+                            <div class="light green"></div>
+                        </div>
+                        <div class="signal-info">
+                            <span class="signal-name">Lane 2</span>
+                            <span class="signal-timer" id="timer-lane_2">—</span>
+                        </div>
+                    </div>
+                    <!-- Lane 3 -->
+                    <div class="signal-unit" id="signal-lane_3">
+                        <div class="signal-lights">
+                            <div class="light red active"></div>
+                            <div class="light yellow"></div>
+                            <div class="light green"></div>
+                        </div>
+                        <div class="signal-info">
+                            <span class="signal-name">Lane 3</span>
+                            <span class="signal-timer" id="timer-lane_3">—</span>
+                        </div>
+                    </div>
+                    <!-- Lane 4 -->
+                    <div class="signal-unit" id="signal-lane_4">
+                        <div class="signal-lights">
+                            <div class="light red active"></div>
+                            <div class="light yellow"></div>
+                            <div class="light green"></div>
+                        </div>
+                        <div class="signal-info">
+                            <span class="signal-name">Lane 4</span>
+                            <span class="signal-timer" id="timer-lane_4">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lane Density Bars — 4 Lanes -->
+            <div class="card density-card">
+                <div class="card-header">
+                    <h2>📊 Lane Density</h2>
+                    <span class="card-badge">Real-time</span>
+                </div>
+                <div class="density-bars-4" id="densityBars">
+                    <div class="density-bar-container">
+                        <span class="bar-label">Lane 1</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" id="density-bar-lane_1" style="width:0%"></div>
+                        </div>
+                        <span class="bar-value" id="density-val-lane_1">—</span>
+                    </div>
+                    <div class="density-bar-container">
+                        <span class="bar-label">Lane 2</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" id="density-bar-lane_2" style="width:0%"></div>
+                        </div>
+                        <span class="bar-value" id="density-val-lane_2">—</span>
+                    </div>
+                    <div class="density-bar-container">
+                        <span class="bar-label">Lane 3</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" id="density-bar-lane_3" style="width:0%"></div>
+                        </div>
+                        <span class="bar-value" id="density-val-lane_3">—</span>
+                    </div>
+                    <div class="density-bar-container">
+                        <span class="bar-label">Lane 4</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" id="density-bar-lane_4" style="width:0%"></div>
+                        </div>
+                        <span class="bar-value" id="density-val-lane_4">—</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Emergency Panel Row -->
+        <section class="bottom-row" style="grid-template-columns: 1fr;">
+            <div class="card emergency-panel" id="emergencyPanel">
+                <div class="emergency-panel-header">
+                    <h2>🚑 Green Corridor Emergency Mode</h2>
+                    <span class="emg-status-badge" id="emgStatusBadge">NORMAL</span>
+                </div>
+
+                <!-- Lane corridor status -->
+                <div class="corridor-lanes" id="corridorLanes">
+                    <div class="corridor-lane" id="corridor-lane_1">
+                        <div class="cl-name">Lane 1</div>
+                        <div class="cl-status">🔴</div>
+                    </div>
+                    <div class="corridor-lane" id="corridor-lane_2">
+                        <div class="cl-name">Lane 2</div>
+                        <div class="cl-status">🔴</div>
+                    </div>
+                    <div class="corridor-lane" id="corridor-lane_3">
+                        <div class="cl-name">Lane 3</div>
+                        <div class="cl-status">🔴</div>
+                    </div>
+                    <div class="corridor-lane" id="corridor-lane_4">
+                        <div class="cl-name">Lane 4</div>
+                        <div class="cl-status">🔴</div>
+                    </div>
+                </div>
+
+                <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin:0 0 .75rem;">
+                    When an ambulance is detected (by camera or GPS), only its lane turns 🟢 GREEN — all others stay 🔴
+                    RED.
+                    After the ambulance passes, the system automatically returns to Normal mode.
+                </p>
+
+                <!-- GPS Trigger Controls -->
+                <div class="emg-controls">
+                    <span style="font-size:.82rem;color:rgba(255,255,255,.5);">Manual GPS Trigger:</span>
+                    <select id="gpsTriggerLane" class="emg-select">
+                        <option value="lane_1">Lane 1</option>
+                        <option value="lane_2">Lane 2</option>
+                        <option value="lane_3">Lane 3</option>
+                        <option value="lane_4">Lane 4</option>
+                    </select>
+                    <button class="btn-gps" onclick="triggerGPS()">📡 GPS Trigger Emergency</button>
+                    <button class="btn-deactivate" id="btnDeactivate" onclick="deactivateEmergency()" disabled>
+                        ✅ Deactivate
+                    </button>
+                    <span id="emgTimeLabel"
+                        style="font-size:.82rem;color:rgba(255,255,255,.4);margin-left:auto;"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Row: Vehicle Counts + Density History -->
+        <section class="bottom-row">
+            <!-- Vehicle Count Breakdown -->
+            <div class="card vehicle-card">
+                <div class="card-header">
+                    <h2>🚗 Vehicle Breakdown</h2>
+                </div>
+                <div class="vehicle-grid" id="vehicleGrid">
+                    <div class="vehicle-type">
+                        <span class="vehicle-icon">🚗</span>
+                        <span class="vehicle-name">Vehicle</span>
+                        <span class="vehicle-count" id="count-Vehicle">—</span>
+                    </div>
+                    <div class="vehicle-type">
+                        <span class="vehicle-icon">🚌</span>
+                        <span class="vehicle-name">Bus</span>
+                        <span class="vehicle-count" id="count-Bus">—</span>
+                    </div>
+                    <div class="vehicle-type">
+                        <span class="vehicle-icon">🚚</span>
+                        <span class="vehicle-name">Truck</span>
+                        <span class="vehicle-count" id="count-Truck">—</span>
+                    </div>
+                    <div class="vehicle-type">
+                        <span class="vehicle-icon">🏍️</span>
+                        <span class="vehicle-name">Motorcycle</span>
+                        <span class="vehicle-count" id="count-Motorcycle">—</span>
+                    </div>
+                    <div class="vehicle-type emergency-type">
+                        <span class="vehicle-icon">🚑</span>
+                        <span class="vehicle-name">Ambulance</span>
+                        <span class="vehicle-count" id="count-Ambulance">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Density History Graph -->
+            <div class="card history-card">
+                <div class="card-header">
+                    <h2>📈 Density Over Time</h2>
+                </div>
+                <canvas id="densityChart" width="500" height="220"></canvas>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- System Info Footer -->
+    <footer class="system-info">
+        <span class="info-tag">🤖 YOLOv8s</span>
+        <span class="info-dot"></span>
+        <span class="info-tag">4 Lanes</span>
+        <span class="info-dot"></span>
+        <span class="info-tag">⚡ Adaptive Signals</span>
+        <span class="info-dot"></span>
+        <span class="info-tag">🚑 Emergency Corridor</span>
+        <span class="info-dot"></span>
+        <span class="info-tag" id="demoTag" style="display:none;">🔴 Live</span>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,26 @@
+# ============================================
+# YOLOv8 Dataset Configuration
+# ============================================
+# Update the 'path' below to match where your dataset is placed.
+# After downloading from Roboflow, your folder will look like:
+#   data/dataset/
+#     ├── train/
+#     │   ├── images/
+#     │   └── labels/
+#     ├── valid/
+#     │   ├── images/
+#     │   └── labels/
+#     └── test/
+#         ├── images/
+#         └── labels/
+#
+# Point 'path' to the parent folder (data/dataset)
+# and train/val/test to the relative image folders.
+
+path: C:/Users/magzt/OneDrive/Desktop/Traffic Congestion Model/Traffic_Management/data/dataset
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 5
+names: ['Ambulance', 'Bus', 'Motorcycle', 'Truck', 'Vehicle']

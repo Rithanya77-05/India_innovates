@@ -1,0 +1,965 @@
+/* ============================================
+   Traffic Management Dashboard - Premium Styles
+   ============================================
+   v2.0 - Enhanced with glassmorphism, animations,
+   gradients, and premium micro-interactions.
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Color Palette - Deep space theme */
+    --bg-primary: #060b18;
+    --bg-secondary: #0d1527;
+    --bg-card: rgba(15, 23, 50, 0.65);
+    --bg-card-hover: rgba(25, 35, 70, 0.75);
+    --surface: rgba(255, 255, 255, 0.04);
+    --glass: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.1);
+
+    --text-primary: #eaf0ff;
+    --text-secondary: #8b99c4;
+    --text-muted: #4e5d87;
+
+    --accent-green: #00e68a;
+    --accent-green-glow: rgba(0, 230, 138, 0.25);
+    --accent-red: #ff4d6a;
+    --accent-yellow: #ffc542;
+    --accent-blue: #4da6ff;
+    --accent-cyan: #00d4ff;
+    --accent-purple: #a78bfa;
+    --accent-pink: #f472b6;
+
+    --signal-red: #ff3333;
+    --signal-yellow: #ffcc00;
+    --signal-green: #00e64d;
+    --signal-off: #1a2040;
+
+    --emergency-red: #ff1744;
+
+    --border: rgba(255, 255, 255, 0.07);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 40px rgba(0, 150, 255, 0.06);
+
+    --radius: 20px;
+    --radius-sm: 14px;
+    --radius-xs: 10px;
+    --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   Reset & Base
+   ============================================ */
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Animated background mesh */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(ellipse 600px 400px at 15% 20%, rgba(0, 230, 138, 0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 500px at 85% 15%, rgba(77, 166, 255, 0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 300px at 50% 85%, rgba(167, 139, 250, 0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 300px 300px at 80% 80%, rgba(244, 114, 182, 0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: bgShift 20s ease-in-out infinite alternate;
+}
+
+@keyframes bgShift {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Grid pattern overlay */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ============================================
+   Emergency Banner
+   ============================================ */
+
+.emergency-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: linear-gradient(90deg, #ff1744, #ff4444, #ff1744, #ff4444, #ff1744);
+    background-size: 300% 100%;
+    animation: emergencyScroll 1.5s linear infinite;
+    padding: 14px 24px;
+    text-align: center;
+    box-shadow: 0 4px 30px rgba(255, 23, 68, 0.6);
+    backdrop-filter: blur(10px);
+}
+
+.emergency-banner.hidden {
+    display: none;
+}
+
+.emergency-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.emergency-icon {
+    font-size: 1.6rem;
+    animation: emergencyPulse 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes emergencyScroll {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 300% 50%;
+    }
+}
+
+@keyframes emergencyPulse {
+    from {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+
+    to {
+        transform: scale(1.4);
+        filter: brightness(1.3);
+    }
+}
+
+/* ============================================
+   Header — Glassmorphism
+   ============================================ */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 36px;
+    background: rgba(10, 16, 35, 0.7);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: var(--transition);
+}
+
+.header.emergency-active {
+    top: 50px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo-icon {
+    font-size: 2.2rem;
+    filter: drop-shadow(0 0 12px rgba(0, 230, 138, 0.5));
+    animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+.logo h1 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan), var(--accent-blue));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 4s ease-in-out infinite;
+    letter-spacing: -0.3px;
+}
+
+@keyframes gradientShift {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+.subtitle {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-top: 3px;
+    letter-spacing: 0.5px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid var(--glass-border);
+    transition: var(--transition);
+}
+
+.status-badge:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    box-shadow: 0 0 8px var(--accent-green-glow);
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+.status-dot.disconnected {
+    background: var(--accent-red);
+    box-shadow: 0 0 8px rgba(255, 77, 106, 0.4);
+    animation: none;
+}
+
+@keyframes statusPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 4px var(--accent-green-glow), 0 0 12px var(--accent-green-glow);
+    }
+
+    50% {
+        opacity: 0.5;
+        box-shadow: 0 0 2px transparent;
+    }
+}
+
+.mode-badge {
+    padding: 8px 20px;
+    border-radius: 24px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    background: rgba(0, 230, 138, 0.1);
+    color: var(--accent-green);
+    border: 1px solid rgba(0, 230, 138, 0.25);
+    transition: var(--transition);
+    text-transform: uppercase;
+}
+
+.mode-badge:hover {
+    background: rgba(0, 230, 138, 0.18);
+    box-shadow: 0 0 20px rgba(0, 230, 138, 0.1);
+}
+
+.mode-badge.emergency {
+    background: rgba(255, 23, 68, 0.2);
+    color: var(--emergency-red);
+    border-color: rgba(255, 23, 68, 0.4);
+    animation: emergencyPulse 0.5s ease-in-out infinite alternate;
+    box-shadow: 0 0 20px rgba(255, 23, 68, 0.2);
+}
+
+/* ============================================
+   Dashboard Grid
+   ============================================ */
+
+.dashboard-grid {
+    position: relative;
+    z-index: 1;
+    padding: 28px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   Stats Row — Glassmorphism Cards
+   ============================================ */
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 22px 24px;
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: var(--radius);
+    border: 1px solid var(--glass-border);
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle shimmer effect on cards */
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg,
+            transparent 40%,
+            rgba(255, 255, 255, 0.03) 50%,
+            transparent 60%);
+    transform: rotate(0deg);
+    transition: transform 0.6s;
+    pointer-events: none;
+}
+
+.stat-card:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), var(--shadow-glow);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.stat-card:hover::before {
+    transform: rotate(180deg);
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    transition: var(--transition);
+    position: relative;
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.08);
+}
+
+/* Glow behind stat icons */
+.stat-icon::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 18px;
+    background: inherit;
+    filter: blur(12px);
+    opacity: 0.35;
+    z-index: -1;
+}
+
+.stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-top: 5px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+/* Congestion level colors */
+.congestion-low {
+    color: var(--accent-green);
+}
+
+.congestion-moderate {
+    color: var(--accent-yellow);
+}
+
+.congestion-high {
+    color: var(--accent-red);
+}
+
+.congestion-critical {
+    color: var(--emergency-red);
+    animation: criticalTextPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes criticalTextPulse {
+    from {
+        opacity: 1;
+        text-shadow: 0 0 10px rgba(255, 23, 68, 0.5);
+    }
+
+    to {
+        opacity: 0.7;
+        text-shadow: 0 0 20px rgba(255, 23, 68, 0.8);
+    }
+}
+
+/* ============================================
+   Cards — Glassmorphism
+   ============================================ */
+
+.card {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: var(--radius);
+    border: 1px solid var(--glass-border);
+    padding: 26px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), var(--shadow-glow);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+}
+
+.card-header h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+}
+
+.card-badge {
+    padding: 5px 14px;
+    background: rgba(77, 166, 255, 0.1);
+    color: var(--accent-blue);
+    border-radius: 16px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border: 1px solid rgba(77, 166, 255, 0.15);
+    transition: var(--transition);
+}
+
+.card-badge:hover {
+    background: rgba(77, 166, 255, 0.18);
+}
+
+/* ============================================
+   Middle Row
+   ============================================ */
+
+.middle-row {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 22px;
+}
+
+/* ============================================
+   Traffic Signals — Enhanced
+   ============================================ */
+
+.signals-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.signal-unit {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.025);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.signal-unit:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateX(4px);
+}
+
+.signal-unit.emergency-active {
+    border-color: var(--emergency-red);
+    background: rgba(255, 23, 68, 0.08);
+    box-shadow: inset 0 0 20px rgba(255, 23, 68, 0.05);
+}
+
+.signal-lights {
+    display: flex;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+}
+
+.light {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    transition: var(--transition);
+    position: relative;
+}
+
+.light.red {
+    background: var(--signal-off);
+    box-shadow: none;
+}
+
+.light.red.active {
+    background: var(--signal-red);
+    box-shadow: 0 0 10px var(--signal-red), 0 0 25px rgba(255, 51, 51, 0.35), 0 0 40px rgba(255, 51, 51, 0.15);
+}
+
+.light.yellow {
+    background: var(--signal-off);
+    box-shadow: none;
+}
+
+.light.yellow.active {
+    background: var(--signal-yellow);
+    box-shadow: 0 0 10px var(--signal-yellow), 0 0 25px rgba(255, 204, 0, 0.35), 0 0 40px rgba(255, 204, 0, 0.15);
+    animation: yellowBlink 1s ease-in-out infinite;
+}
+
+@keyframes yellowBlink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.light.green {
+    background: var(--signal-off);
+    box-shadow: none;
+}
+
+.light.green.active {
+    background: var(--signal-green);
+    box-shadow: 0 0 10px var(--signal-green), 0 0 25px rgba(0, 230, 77, 0.35), 0 0 40px rgba(0, 230, 77, 0.15);
+}
+
+.signal-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.signal-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.signal-timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent-green);
+    margin-top: 2px;
+    transition: var(--transition-fast);
+}
+
+/* ============================================
+   Density Bars — Enhanced with glow
+   ============================================ */
+
+.density-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.density-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.bar-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 65px;
+}
+
+.bar-track {
+    flex: 1;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 16px;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease;
+    position: relative;
+    box-shadow: 0 0 12px rgba(0, 230, 138, 0.15);
+}
+
+.bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.12) 50%,
+            transparent 100%);
+    animation: barShimmer 2s ease-in-out infinite;
+}
+
+@keyframes barShimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.bar-fill.moderate {
+    background: linear-gradient(90deg, var(--accent-yellow), #fda085);
+    box-shadow: 0 0 12px rgba(255, 197, 66, 0.2);
+}
+
+.bar-fill.high {
+    background: linear-gradient(90deg, #ff6b6b, var(--accent-red));
+    box-shadow: 0 0 12px rgba(255, 77, 106, 0.2);
+}
+
+.bar-fill.critical {
+    background: linear-gradient(90deg, var(--emergency-red), #ff6b6b);
+    animation: criticalPulse 1s ease-in-out infinite alternate;
+    box-shadow: 0 0 16px rgba(255, 23, 68, 0.3);
+}
+
+@keyframes criticalPulse {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0.65;
+    }
+}
+
+.bar-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 45px;
+    text-align: right;
+}
+
+/* ============================================
+   Bottom Row
+   ============================================ */
+
+.bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 22px;
+}
+
+/* ============================================
+   Vehicle Grid — Enhanced
+   ============================================ */
+
+.vehicle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.vehicle-type {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.025);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    cursor: default;
+}
+
+.vehicle-type:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px) scale(1.01);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.vehicle-type.emergency-type {
+    border-color: rgba(255, 23, 68, 0.15);
+    background: rgba(255, 23, 68, 0.03);
+}
+
+.vehicle-type.emergency-type:hover {
+    border-color: rgba(255, 23, 68, 0.3);
+    background: rgba(255, 23, 68, 0.06);
+    box-shadow: 0 8px 24px rgba(255, 23, 68, 0.1);
+}
+
+.vehicle-icon {
+    font-size: 1.5rem;
+    transition: var(--transition);
+}
+
+.vehicle-type:hover .vehicle-icon {
+    transform: scale(1.15);
+}
+
+.vehicle-name {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    flex: 1;
+    font-weight: 500;
+}
+
+.vehicle-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    transition: var(--transition-fast);
+}
+
+/* Count animation flash */
+.vehicle-count.value-changed {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+    transform: scale(1.15);
+}
+
+/* ============================================
+   Density Chart Canvas
+   ============================================ */
+
+#densityChart {
+    width: 100%;
+    height: 220px;
+    border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   Footer / System Info
+   ============================================ */
+
+.system-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 16px 36px 24px;
+    position: relative;
+    z-index: 1;
+}
+
+.info-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    letter-spacing: 0.3px;
+}
+
+.info-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--text-muted);
+}
+
+/* ============================================
+   Scrollbar
+   ============================================ */
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   Selection
+   ============================================ */
+
+::selection {
+    background: rgba(0, 230, 138, 0.2);
+    color: var(--text-primary);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .middle-row,
+    .bottom-row {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-grid {
+        padding: 20px 16px;
+    }
+
+    .header {
+        padding: 16px 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 14px;
+        padding: 14px 16px;
+    }
+
+    .vehicle-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-value {
+        font-size: 1.6rem;
+    }
+
+    .logo h1 {
+        font-size: 1.15rem;
+    }
+}
