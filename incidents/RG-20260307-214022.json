@@ -1,0 +1,22 @@
+{
+  "id": "RG-20260307-214022",
+  "ts": "2026-03-07 21:40:22",
+  "cam": "CAM-001",
+  "location": "Unknown Location",
+  "coords": {
+    "lat": 10.6578,
+    "lng": 77.0083
+  },
+  "maps": "https://maps.google.com/?q=10.6578,77.0083",
+  "type": "PEDESTRIAN",
+  "severity": "INFO",
+  "score": 0,
+  "vehicles": [
+    1,
+    2
+  ],
+  "speed_kmh": 0.0,
+  "pedestrian": true,
+  "alert": "none",
+  "clip": ""
+}

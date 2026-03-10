@@ -1,0 +1,21 @@
+{
+  "incident_id": "RG-20260307-212703",
+  "timestamp": "2026-03-07 21:27:03",
+  "camera_id": "CAM-001",
+  "location": "Unknown Location",
+  "coordinates": {
+    "lat": 10.6578,
+    "lng": 77.0083
+  },
+  "maps": "https://maps.google.com/?q=10.6578,77.0083",
+  "type": "WRONG-WAY VEHICLE",
+  "severity": "SEVERE",
+  "score": 70,
+  "vehicles": [
+    106
+  ],
+  "max_speed_kmh": 43.2,
+  "pedestrian": true,
+  "alert_sent": "sms",
+  "clip": "incidents\\RG-20260307-212650.avi"
+}

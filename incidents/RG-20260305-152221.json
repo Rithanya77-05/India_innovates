@@ -1,0 +1,19 @@
+{
+  "incident_id": "RG-20260305-152221",
+  "timestamp": "2026-03-05 15:22:21",
+  "camera_id": "CAM-001",
+  "location": "Unknown Location",
+  "coordinates": {
+    "lat": 10.6578,
+    "lng": 77.0083
+  },
+  "maps": "https://maps.google.com/?q=10.6578,77.0083",
+  "type": "PEDESTRIAN ON ROAD",
+  "severity": "SEVERE",
+  "score": 55,
+  "vehicles": [
+    106
+  ],
+  "pedestrian": true,
+  "clip": "incidents\\RG-20260305-152218.avi"
+}
