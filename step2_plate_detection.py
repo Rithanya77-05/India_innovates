@@ -1,6 +1,7 @@
 from ultralytics import YOLO
 import cv2
 
+
 # Load plate detection model
 model = YOLO("license_plate.pt")
 
